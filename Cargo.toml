@@ -1,0 +1,18 @@
+[package]
+name = "ukf"
+version = "0.1.0"
+authors = ["nick <nick.hortovanyi@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+clap = "2.33.0"
+# slog = "2.5.2"
+slog = {version = "2.5.2", features = ["max_level_trace", "release_max_level_warn"]}
+slog-term = "2.5.0"
+slog-async = "2.4.0"
+slog-scope = "4.3.0"
+nalgebra = "0.19.0"
+# nalgebra-lapack = {version = "0.11.0", default-features = false, features = ["openblas"]} 
