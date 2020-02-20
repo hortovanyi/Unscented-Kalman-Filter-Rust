@@ -64,7 +64,7 @@ fn run_ukf(input_file: &File, output_file: &File) -> Result<(), String> {
         let l = line.unwrap();
         let mp = MeasurementPackage::from_csv_string(l.clone());
         let gtp = GroudTruthPackage::from_csv_string(l.clone());
-        // println!("{} {:?} {:?}",l, mp, gtp);
+        // trace!("{} {:?} {:?}",l, mp, gtp);
         measurements.push(mp);
         ground_truths.push(gtp);
     }
@@ -74,7 +74,7 @@ fn run_ukf(input_file: &File, output_file: &File) -> Result<(), String> {
     info!("processing measurement data ....");
     for (i, m) in measurements.iter().enumerate() {
         let x = ukf.process_measurement(m);
-        trace!("{} x:{:?} ", i, x);
+        // trace!("{} x:{:?} ", i, x);
         let xest = EstimationPackage::from_state(&x);
         estimations.push(xest);
 
