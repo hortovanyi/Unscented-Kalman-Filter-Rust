@@ -414,7 +414,7 @@ pub mod kalman_filter {
                 return self.x;
             }
 
-            let delta_t: f64 = (m.timestamp - self.prev_timestamp) as f64 / 100000.0;
+            let delta_t: f64 = (m.timestamp - self.prev_timestamp) as f64 / 1000000.0;
             self.prev_timestamp = m.timestamp;
 
             // prediction step
