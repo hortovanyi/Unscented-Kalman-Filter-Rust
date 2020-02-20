@@ -1,3 +1,5 @@
+
+#[allow(non_snake_case)]
 pub mod ukf {
     extern crate nalgebra as na;
     use na::{DMatrix, MatrixMN, MatrixN};
