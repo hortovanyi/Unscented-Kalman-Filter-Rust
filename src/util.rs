@@ -24,7 +24,7 @@ pub mod helper {
         let mut rmse = Vector4::new(0.0, 0.0, 0.0, 0.0);
 
         if estimations.len() != ground_truths.len() || estimations.len() == 0 {
-            warn!("Invalid estimation or ground truth data");
+            warn!("Invalid estimation or ground truth data!");
             return vec![rmse[0], rmse[1], rmse[2], rmse[3]];
         }
 
