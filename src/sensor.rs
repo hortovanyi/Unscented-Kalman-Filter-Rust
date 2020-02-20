@@ -52,7 +52,7 @@ pub mod measurement {
     impl DeviceSensor<LidarSensor> for LidarSensor {
         fn new() -> LidarSensor {
             LidarSensor {
-                n_z: 3,
+                n_z: N_Z_LIDAR,
                 std_laspx: 0.15,
                 std_laspy: 0.15,
             }
@@ -107,7 +107,7 @@ pub mod measurement {
     impl DeviceSensor<RadarSensor> for RadarSensor {
         fn new() -> RadarSensor {
             RadarSensor {
-                n_z: 3,
+                n_z: N_Z_RADAR,
                 std_radr: 0.3,
                 std_radphi: 0.03,
                 std_radrd: 0.3,
