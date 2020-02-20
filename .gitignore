@@ -17,3 +17,4 @@ Cargo.lock
 /target
 #**/*.rs.bk
 ukf-rust.code-workspace
+.~lock.output.txt#
