@@ -219,10 +219,12 @@ pub mod ukf {
         fn into_state(&self) -> V {
             self.z()
         }
-        fn nis(&self, z_pred: &V, S: &W)-> f64;
+        fn nis(&self, z_pred: &V, S: &W) -> f64;
     }
 
-    impl HasMeasurementFactory<LidarMeasurement, LidarStateVector, LidarCovarMatrix> for LidarMeasurement {
+    impl HasMeasurementFactory<LidarMeasurement, LidarStateVector, LidarCovarMatrix>
+        for LidarMeasurement
+    {
         fn z(&self) -> LidarStateVector {
             LidarStateVector::new(self.px, self.py)
         }
@@ -231,7 +233,9 @@ pub mod ukf {
         }
     }
 
-    impl HasMeasurementFactory<RadarMeasurement, RadarStateVector, RadarCovarMatrix> for RadarMeasurement {
+    impl HasMeasurementFactory<RadarMeasurement, RadarStateVector, RadarCovarMatrix>
+        for RadarMeasurement
+    {
         fn z(&self) -> RadarStateVector {
             RadarStateVector::new(self.rho, self.theta, self.rho_dot)
         }

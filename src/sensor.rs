@@ -2,7 +2,7 @@ pub mod measurement {
 
     extern crate nalgebra as na;
 
-    use na::{Vector2,Vector3,Vector4};
+    use na::{Vector2, Vector3, Vector4};
 
     use crate::ukf_type;
     use ukf_type::ukf::*;
@@ -23,7 +23,7 @@ pub mod measurement {
     }
 
     impl LidarMeasurement {
-        pub fn point(&self) -> (f64, f64){
+        pub fn point(&self) -> (f64, f64) {
             (self.px, self.py)
         }
         // Normalised Innovation Squared
@@ -31,12 +31,12 @@ pub mod measurement {
             let raw_v = Vector2::<f64>::new(self.px, self.py);
             let z_pred = Vector2::<f64>::new(z_pred[0], z_pred[1]);
 
-            let diff_pred = raw_v-z_pred;
+            let diff_pred = raw_v - z_pred;
             let S_inv = S.try_inverse().unwrap();
-            
-            let nis = diff_pred.transpose()*S_inv*diff_pred;
-            
-            nis[(0,0)]
+
+            let nis = diff_pred.transpose() * S_inv * diff_pred;
+
+            nis[(0, 0)]
         }
     }
 
@@ -76,9 +76,9 @@ pub mod measurement {
         pub theta: f64,
         pub rho_dot: f64,
     }
-    
+
     impl RadarMeasurement {
-        pub fn point(&self) -> (f64, f64){
+        pub fn point(&self) -> (f64, f64) {
             (self.rho * self.theta.cos(), self.rho * self.theta.sin())
         }
         // Normalised Innovation Squared
@@ -86,12 +86,12 @@ pub mod measurement {
             let raw_v = Vector3::<f64>::new(self.rho, self.theta, self.rho_dot);
             let z_pred = Vector3::<f64>::new(z_pred[0], z_pred[1], z_pred[2]);
 
-            let diff_pred = raw_v-z_pred;
+            let diff_pred = raw_v - z_pred;
             let S_inv = S.try_inverse().unwrap();
-            
-            let nis = diff_pred.transpose()*S_inv*diff_pred;
-            
-            nis[(0,0)]
+
+            let nis = diff_pred.transpose() * S_inv * diff_pred;
+
+            nis[(0, 0)]
         }
     }
     impl SensorMeasurement<RadarMeasurement> for RadarMeasurement {}
@@ -186,8 +186,13 @@ pub mod measurement {
             }
         }
 
-        pub fn residual_vector(&self, gt:&GroudTruthPackage) -> Vector4<f64> {
-            Vector4::new(self.x - gt.x, self.y -gt.y, self.vx -gt.vx, self.vy-gt.vy)
+        pub fn residual_vector(&self, gt: &GroudTruthPackage) -> Vector4<f64> {
+            Vector4::new(
+                self.x - gt.x,
+                self.y - gt.y,
+                self.vx - gt.vx,
+                self.vy - gt.vy,
+            )
         }
     }
 

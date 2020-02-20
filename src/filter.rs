@@ -42,7 +42,6 @@ pub mod kalman_filter {
         // Normalised Innovation Squared
         pub nis_lidar: f64,
         pub nis_radar: f64,
-    
     }
 
     #[allow(non_snake_case)]
@@ -434,8 +433,8 @@ pub mod kalman_filter {
             };
 
             match m.sensor_type {
-                SensorType::Lidar => {self.nis_lidar = nis}
-                SensorType::Radar => {self.nis_radar = nis}
+                SensorType::Lidar => self.nis_lidar = nis,
+                SensorType::Radar => self.nis_radar = nis,
             }
             self.x = x;
             self.P = P;
