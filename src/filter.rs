@@ -120,8 +120,8 @@ pub mod kalman_filter {
                 let nu_yawdd = X_sig_aug[(6, i)];
 
                 // predicted state values in *_p
-                let mut px_p: f64 = 0.0;
-                let mut py_p: f64 = 0.0;
+                let mut px_p: f64;
+                let mut py_p: f64;
 
                 // avoid division by zero
                 if yawd.is_normal() {

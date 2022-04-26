@@ -4,7 +4,7 @@
 pub mod ukf {
     extern crate nalgebra as na;
     use na::OMatrix;
-    use na::{DVector, OVector, U15, U2, U3, U5, U7};
+    use na::{OVector, U15, U2, U3, U5, U7};
 
     use crate::sensor;
     use crate::sensor::measurement::DeviceSensor;
@@ -70,9 +70,6 @@ pub mod ukf {
 
     // sigma point weights
     pub type SigmaPointWeights = OVector<f64, USigmaPoints>;
-
-    // weights vector
-    pub type WeightsVector = DVector<f64>;
 
     // cross correlation matrix
     pub type LidarCrossCorrelationMatrix = OMatrix<f64, UX, UZLIDAR>;
@@ -473,7 +470,7 @@ pub mod ukf {
                 let mut z_diff = Z_sig.column(i) - Z_sig.column(0);
                 z_diff[1] = negative_normalize(z_diff[1]);
                 let mut x_diff =
-                    X_sig_pred.fixed_slice::<5, 1>(0, i) - X_sig_pred.fixed_slice::<5, 1>(0, 0);
+                    X_sig_pred.fixed_slice::<N_X, 1>(0, i) - X_sig_pred.fixed_slice::<N_X, 1>(0, 0);
                 x_diff[3] = negative_normalize(x_diff[3]);
                 Tc += weights[i] * x_diff * z_diff.transpose();
             }
@@ -495,7 +492,7 @@ pub mod ukf {
                 // TODO double check this normalisation in lidar
                 z_diff[1] = negative_normalize(z_diff[1]);
                 let mut x_diff =
-                    X_sig_pred.fixed_slice::<5, 1>(0, i) - X_sig_pred.fixed_slice::<5, 1>(0, 0);
+                    X_sig_pred.fixed_slice::<N_X, 1>(0, i) - X_sig_pred.fixed_slice::<N_X, 1>(0, 0);
                 x_diff[3] = negative_normalize(x_diff[3]);
                 Tc += weights[i] * x_diff * z_diff.transpose();
             }
