@@ -1,9 +1,10 @@
 
+#[macro_use]
 #[allow(non_snake_case)]
 pub mod ukf {
     extern crate nalgebra as na;
-    use na::{DMatrix, MatrixMN, MatrixN};
-    use na::{DVector, VectorN, U1, U15, U2, U3, U5, U7};
+    use na::OMatrix;
+    use na::{DVector, OVector, U15, U2, U3, U5, U7};
 
     use crate::sensor;
     use crate::sensor::measurement::DeviceSensor;
@@ -19,11 +20,11 @@ pub mod ukf {
 
     // state dimensions
     pub const N_X: usize = 5;
-    pub type U_X = U5;
+    pub type UX = U5;
 
     // augmented state dimensions
     pub const N_AUG: usize = 7;
-    pub type U_AUG = U7;
+    pub type UAUG = U7;
 
     // process noise standard deviation longitudinal acceleration in m/s^2
     pub const STD_A: f64 = 0.45;
@@ -33,52 +34,52 @@ pub mod ukf {
 
     // size of lidar and radar measurement state vectors
     pub const N_Z_LIDAR: usize = 2;
-    pub type U_Z_LIDAR = U2;
+    pub type UZLIDAR = U2;
     pub const N_Z_RADAR: usize = 3;
-    pub type U_Z_RADAR = U3;
+    pub type UZRADAR = U3;
 
     // sigma points (2 * N_AUG + 1)
-    pub type U_SIGMA_POINTS = U15;
+    pub type USigmaPoints = U15;
 
     // define the spreading parameter
     pub const LAMBDA: f64 = 3.0 - N_AUG as f64;
 
     // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
-    pub type StateVector = VectorN<f64, U_X>;
-    pub type AugStateVector = VectorN<f64, U_AUG>;
+    pub type StateVector = OVector<f64, UX>;
+    pub type AugStateVector = OVector<f64, UAUG>;
 
-    pub type LidarStateVector = VectorN<f64, U_Z_LIDAR>;
-    pub type RadarStateVector = VectorN<f64, U_Z_RADAR>;
+    pub type LidarStateVector = OVector<f64, UZLIDAR>;
+    pub type RadarStateVector = OVector<f64, UZRADAR>;
 
     // measurement covariance matrices
-    pub type CovarMatrix = MatrixN<f64, U_X>;
-    pub type AugCovarMatrix = MatrixN<f64, U_AUG>;
+    pub type CovarMatrix = OMatrix<f64, UX, UX>;
+    pub type AugCovarMatrix = OMatrix<f64, UAUG, UAUG>;
     pub type CholeskyMatrix = AugCovarMatrix;
-    pub type LidarCovarMatrix = MatrixN<f64, U_Z_LIDAR>;
+    pub type LidarCovarMatrix = OMatrix<f64, UZLIDAR, UZLIDAR>;
     pub type LidarNoiseCovarMatrix = LidarCovarMatrix;
-    pub type RadarCovarMatrix = MatrixN<f64, U_Z_RADAR>;
+    pub type RadarCovarMatrix = OMatrix<f64, UZRADAR, UZRADAR>;
     pub type RadarNoiseCovarMatrix = RadarCovarMatrix;
 
     // augmented sigma points matrix (n_aug, 2 * n_aug + 1)
-    pub type AugSigmaPoints = MatrixMN<f64, U_AUG, U_SIGMA_POINTS>;
+    pub type AugSigmaPoints = OMatrix<f64, UAUG, USigmaPoints>;
 
     // predicted sigma points matrix (n_x, 2* n_aug + 1)
-    pub type SigmaPoints = MatrixMN<f64, U_X, U_SIGMA_POINTS>;
-    pub type LidarSigmaPoints = MatrixMN<f64, U_Z_LIDAR, U_SIGMA_POINTS>;
-    pub type RadarSigmaPoints = MatrixMN<f64, U_Z_RADAR, U_SIGMA_POINTS>;
+    pub type SigmaPoints = OMatrix<f64, UX, USigmaPoints>;
+    pub type LidarSigmaPoints = OMatrix<f64, UZLIDAR, USigmaPoints>;
+    pub type RadarSigmaPoints = OMatrix<f64, UZRADAR, USigmaPoints>;
 
     // sigma point weights
-    pub type SigmaPointWeights = VectorN<f64, U_SIGMA_POINTS>;
+    pub type SigmaPointWeights = OVector<f64, USigmaPoints>;
 
     // weights vector
     pub type WeightsVector = DVector<f64>;
 
     // cross correlation matrix
-    pub type LidarCrossCorrelationMatrix = MatrixMN<f64, U_X, U_Z_LIDAR>;
-    pub type RadarCrossCorrelationMatrix = MatrixMN<f64, U_X, U_Z_RADAR>;
+    pub type LidarCrossCorrelationMatrix = OMatrix<f64, UX, UZLIDAR>;
+    pub type RadarCrossCorrelationMatrix = OMatrix<f64, UX, UZRADAR>;
 
-    pub type LidarKalmanGain = MatrixMN<f64, U_X, U_Z_LIDAR>;
-    pub type RadarKalmanGain = MatrixMN<f64, U_X, U_Z_RADAR>;
+    pub type LidarKalmanGain = OMatrix<f64, UX, UZLIDAR>;
+    pub type RadarKalmanGain = OMatrix<f64, UX, UZRADAR>;
 
     pub trait HasStateVectorColumnSlice {
         fn state_from_col(&self, i: usize) -> StateVector;
@@ -472,7 +473,7 @@ pub mod ukf {
                 let mut z_diff = Z_sig.column(i) - Z_sig.column(0);
                 z_diff[1] = negative_normalize(z_diff[1]);
                 let mut x_diff =
-                    X_sig_pred.fixed_slice::<U5, U1>(0, i) - X_sig_pred.fixed_slice::<U5, U1>(0, 0);
+                    X_sig_pred.fixed_slice::<5, 1>(0, i) - X_sig_pred.fixed_slice::<5, 1>(0, 0);
                 x_diff[3] = negative_normalize(x_diff[3]);
                 Tc += weights[i] * x_diff * z_diff.transpose();
             }
@@ -494,7 +495,7 @@ pub mod ukf {
                 // TODO double check this normalisation in lidar
                 z_diff[1] = negative_normalize(z_diff[1]);
                 let mut x_diff =
-                    X_sig_pred.fixed_slice::<U5, U1>(0, i) - X_sig_pred.fixed_slice::<U5, U1>(0, 0);
+                    X_sig_pred.fixed_slice::<5, 1>(0, i) - X_sig_pred.fixed_slice::<5, 1>(0, 0);
                 x_diff[3] = negative_normalize(x_diff[3]);
                 Tc += weights[i] * x_diff * z_diff.transpose();
             }

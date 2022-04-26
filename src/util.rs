@@ -33,16 +33,17 @@ pub mod helper {
             let mut residual: Vector4<f64> = estimations[i].residual_vector(&ground_truths[i]);
 
             // coefficient-wise multiplications
-            residual.apply(|x| x * x);
+            // residual.apply(|x| x.powi(2));
 
-            rmse += residual;
+            rmse += residual.map(|x| x.powi(2));
         }
 
         // calculate the mean
         let mut rmse = rmse / estimations.len() as f64;
 
         // calulate the square root
-        rmse.apply(|x| x.sqrt());
+        // rmse.apply(|x| x.sqrt());
+        let rmse = rmse.map(|x| x.sqrt());
 
         vec![rmse[0], rmse[1], rmse[2], rmse[3]]
     }

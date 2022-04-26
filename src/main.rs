@@ -16,19 +16,18 @@ extern crate csv;
 #[macro_use]
 extern crate serde_derive;
 
-use clap::{value_t_or_exit, App, Arg, ArgMatches, SubCommand};
-use slog::{Drain, Logger};
-use std::process;
+use slog::Drain;
+use std::io::{BufReader, BufRead};
+use std::{process, usize};
 
 use std::fs::File;
-use std::io;
-use std::io::prelude::*;
-use std::io::{BufReader, LineWriter};
 use std::path::Path;
 use std::vec::Vec;
 
 pub use filter::kalman_filter::*;
 pub use sensor::measurement::*;
+
+use clap::Parser;
 
 #[derive(Serialize)]
 struct Output {
@@ -60,14 +59,14 @@ fn run_ukf(input_file: &File, output_file: &File) -> Result<(), String> {
         .from_writer(output_file);
 
     info!("loading measurement data ....");
-    for line in reader.lines() {
+    reader.lines().into_iter().for_each(|line| {
         let l = line.unwrap();
         let mp = MeasurementPackage::from_csv_string(l.clone());
         let gtp = GroudTruthPackage::from_csv_string(l.clone());
         // trace!("{} {:?} {:?}",l, mp, gtp);
         measurements.push(mp);
         ground_truths.push(gtp);
-    }
+    });
 
     trace!("creating ukf object");
     let mut ukf: UnscentedKalmanFilter = UKF::new();
@@ -112,8 +111,8 @@ fn run_ukf(input_file: &File, output_file: &File) -> Result<(), String> {
     Ok(())
 }
 
-fn run(matches: ArgMatches) -> Result<(), String> {
-    let min_log_level = match matches.occurrences_of("verbose") {
+fn run(args: Arguments) -> Result<(), String> {
+    let min_log_level = match args.verbose {
         0 => slog::Level::Info,
         1 => slog::Level::Debug,
         2 | _ => slog::Level::Trace,
@@ -135,7 +134,7 @@ fn run(matches: ArgMatches) -> Result<(), String> {
 
     debug!("slog::Level::{}", min_log_level.as_str());
     trace!("app_setup");
-    let input_file_name = value_t_or_exit!(matches.value_of("INPUT"), String);
+    let input_file_name = args.input;
     let input_path = Path::new(&input_file_name);
     if !input_path.is_file() {
         error!(
@@ -145,7 +144,7 @@ fn run(matches: ArgMatches) -> Result<(), String> {
         panic!("no input file!");
     }
 
-    let output_file_name = value_t_or_exit!(matches.value_of("OUTPUT"), String);
+    let output_file_name = args.output;
     let output_path = Path::new(&output_file_name);
     if output_path.is_file() {
         warn!("output_path: {} will be overwritten", output_path.display());
@@ -166,24 +165,31 @@ fn run(matches: ArgMatches) -> Result<(), String> {
     Ok(())
 }
 
-fn main() {
-    let matches = App::new("ukf")
-        .version("0.1.0")
-        .author("Nick Hortovanyi")
-        .about("Unscented Kalman Filter based on C++ version")
-        .args_from_usage(
-            "<INPUT>    'Sets the measurement input file to use'
-                         <OUTPUT>   'Output file to use'",
-        )
-        .arg(
-            Arg::with_name("verbose")
-                .short("v")
-                .multiple(true)
-                .help("verbosity level"),
-        )
-        .get_matches();
+fn validate_file_name(name: &str) -> Result<(), String> {
+    if name.trim().len() != name.len() {
+        Err(String::from(
+            "file name cannot have leading and trailing space",
+        ))
+    } else {
+        Ok(())
+    }
+}
 
-    if let Err(err) = run(matches) {
+#[derive(Parser,Default,Debug,Clone)]
+#[clap(author="Nick Hortovanyi",version="0.2.0",about="Unscented Kalman Filter in Rust based on C++ version")]
+struct Arguments {
+    #[clap(short, long, forbid_empty_values = true, validator = validate_file_name)]
+    input: String,
+    #[clap(short, long, forbid_empty_values = true, validator = validate_file_name)]
+    output: String,
+    #[clap(short, long, default_value_t = 0, parse(from_occurrences))]
+    verbose: usize
+}
+
+fn main() {
+
+    let args = Arguments::parse();
+    if let Err(err) = run(args) {
         println!("Application error: {}", err);
         process::exit(1);
     }
